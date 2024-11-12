@@ -67,7 +67,7 @@ class ListTileOpacity extends StatefulWidget {
 class _ListTileOpacityState extends State<ListTileOpacity>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation _animation;
+  late Animation<Offset> _animation;
 
   @override
   void initState() {
@@ -75,7 +75,8 @@ class _ListTileOpacityState extends State<ListTileOpacity>
     _controller = AnimationController(
         duration: const Duration(milliseconds: 600), vsync: this);
 
-    _animation = Tween<double>(begin: 1.0, end: 0.0)
+    _animation = Tween<Offset>(
+            begin: const Offset(0, 0), end: const Offset(1, 0))
         .animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
 
     _controller.addStatusListener((status) {
@@ -96,19 +97,20 @@ class _ListTileOpacityState extends State<ListTileOpacity>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Opacity(
-            opacity: _animation.value,
-            child: ListTile(
-              title: Text(widget.title),
-              trailing: IconButton(
-                  onPressed: () async {
-                    _controller.forward();
-                    await Future.delayed(const Duration(milliseconds: 500), () {
-                      widget.buttonPressedListener();
-                    });
-                  },
-                  icon: const Icon(Icons.delete, color: Colors.red)),
-            ));
+        return SlideTransition(
+          position: _animation,
+          child: ListTile(
+            title: Text(widget.title),
+            trailing: IconButton(
+                onPressed: () async {
+                  _controller.forward();
+                  await Future.delayed(const Duration(milliseconds: 500), () {
+                    widget.buttonPressedListener();
+                  });
+                },
+                icon: const Icon(Icons.delete, color: Colors.red)),
+          ),
+        );
       },
     );
   }
